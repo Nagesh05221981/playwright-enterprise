@@ -1,0 +1,59 @@
+{
+  "name": "playwright",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "npx playwright test",
+    "test:sanity": "npx playwright test --project=sanity",
+    "test:smoke": "npx playwright test --project=smoke",
+    "test:regression": "npx playwright test --project=regression",
+    "test:e2e": "npx playwright test --project=e2e",
+    "test:api": "npx playwright test --project=api",
+    "test:a11y": "npx playwright test --project=accessibility",
+    "test:visual": "npx playwright test --project=visual",
+    "tag:sanity": "npx playwright test --grep @sanity",
+    "tag:smoke": "npx playwright test --grep @smoke",
+    "tag:regression": "npx playwright test --grep @regression",
+    "tag:critical": "npx playwright test --grep @critical",
+    "tag:flaky": "npx playwright test --grep @flaky",
+    "tag:a11y": "npx playwright test --grep @a11y",
+    "tag:visual": "npx playwright test --grep @visual",
+    "tag:exclude-flaky": "npx playwright test --grep-invert @flaky",
+    "test:dev": "TEST_ENV=dev npx playwright test",
+    "test:staging": "TEST_ENV=staging npx playwright test",
+    "test:prod": "TEST_ENV=prod npx playwright test",
+    "test:headed": "npx playwright test --headed",
+    "test:debug": "npx playwright test --debug",
+    "test:ui": "npx playwright test --ui",
+    "report": "npx playwright show-report",
+    "report:allure": "allure generate allure-results --clean -o allure-report && allure open allure-report",
+    "lint": "eslint tests/ src/",
+    "lint:fix": "eslint tests/ src/ --fix",
+    "clean": "rm -rf test-results playwright-report allure-results allure-report logs/"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@eslint/js": "^10.0.1",
+    "@faker-js/faker": "^10.5.0",
+    "@playwright/test": "^1.62.1",
+    "@types/node": "^26.2.0",
+    "allure-playwright": "^3.10.2",
+    "dotenv": "^17.4.2",
+    "eslint": "^10.8.1",
+    "winston": "^3.19.0"
+  },
+  "directories": {
+    "test": "tests"
+  },
+  "dependencies": {
+    "fsevents": "^2.3.2",
+    "playwright": "^1.62.1",
+    "playwright-core": "^1.62.1",
+    "undici-types": "^8.3.0"
+  }
+}

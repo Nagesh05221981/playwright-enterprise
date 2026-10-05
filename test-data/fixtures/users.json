@@ -1,0 +1,5 @@
+[
+  { "role": "admin",   "username": "admin",  "password": "admin123",  "canAccessSettings": true  },
+  { "role": "editor",  "username": "editor", "password": "editor123", "canAccessSettings": false },
+  { "role": "viewer",  "username": "viewer", "password": "viewer123", "canAccessSettings": false }
+]

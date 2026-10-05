@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Environment
+.env*
+
+# Auth state
+auth/
+
+# Test output
+test-results/
+playwright-report/
+blob-report/
+
+# Allure
+allure-results/
+allure-report/
+
+# Logs
+logs/
+
+# Playwright cache
+/playwright/.cache/

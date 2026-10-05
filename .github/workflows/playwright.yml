@@ -1,0 +1,87 @@
+name: Playwright Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options: [dev, staging]
+      project:
+        description: 'Test project to run'
+        required: true
+        default: 'smoke'
+        type: choice
+        options: [smoke, regression, e2e, api, accessibility, visual]
+
+env:
+  TEST_ENV: ${{ github.event.inputs.environment || 'dev' }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1/4, 2/4, 3/4, 4/4]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run tests
+        run: npx playwright test --shard=${{ matrix.shard }} --project=${{ github.event.inputs.project || 'smoke' }}
+        env:
+          ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          LOG_LEVEL: info
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-${{ strategy.job-index }}
+          path: |
+            test-results/
+            playwright-report/
+            logs/
+          retention-days: 14
+
+  report:
+    needs: test
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all results
+        uses: actions/download-artifact@v4
+        with:
+          path: all-results/
+
+      - name: Merge reports
+        run: npx playwright merge-reports --reporter=html ./all-results
+
+      - name: Publish report
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-playwright-report
+          path: playwright-report/
+          retention-days: 30
