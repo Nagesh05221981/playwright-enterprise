@@ -6,6 +6,7 @@ class CustomReporter {
     this.options = options;
     this.results = { passed: 0, failed: 0, skipped: 0, flaky: 0, tests: [] };
     this.startTime = null;
+    this.testOutcomes = new Map(); // track per-test final outcome
   }
 
   onBegin(config, suite) {
@@ -20,29 +21,33 @@ class CustomReporter {
   }
 
   onTestEnd(test, result) {
-    const status = result.status;
-    if (status === 'passed') this.results.passed++;
-    else if (status === 'skipped') this.results.skipped++;
-    else if (status === 'failed') this.results.failed++;
-
-    if (result.status === 'passed' && result.retry > 0) {
-      this.results.flaky++;
-    }
-
-    if (status === 'failed') {
-      this.results.tests.push({
-        title: test.title,
-        suite: test.parent?.title || '',
-        file: test.location.file,
-        line: test.location.line,
-        error: result.errors?.[0]?.message || 'Unknown error',
-        duration: result.duration,
-        retry: result.retry,
-      });
-    }
+    // Store the latest result per test — overwrites previous retries
+    this.testOutcomes.set(test.id, { test, result });
   }
 
   async onEnd(result) {
+    // Count only the final outcome of each test (not per-retry)
+    for (const { test, result: testResult } of this.testOutcomes.values()) {
+      const status = testResult.status;
+      if (status === 'passed') {
+        this.results.passed++;
+        if (testResult.retry > 0) this.results.flaky++;
+      } else if (status === 'skipped') {
+        this.results.skipped++;
+      } else if (status === 'failed') {
+        this.results.failed++;
+        this.results.tests.push({
+          title: test.title,
+          suite: test.parent?.title || '',
+          file: test.location.file,
+          line: test.location.line,
+          error: testResult.errors?.[0]?.message || 'Unknown error',
+          duration: testResult.duration,
+          retry: testResult.retry,
+        });
+      }
+    }
+
     const duration = ((Date.now() - this.startTime) / 1000).toFixed(1);
     const total = this.results.passed + this.results.failed + this.results.skipped;
     const passRate = total > 0 ? ((this.results.passed / total) * 100).toFixed(1) : 0;

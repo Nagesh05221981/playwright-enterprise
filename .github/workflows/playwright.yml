@@ -55,14 +55,21 @@ jobs:
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
           LOG_LEVEL: info
 
-      - name: Upload test results
+      - name: Upload blob report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: blob-report-${{ strategy.job-index }}
+          path: blob-report/
+          retention-days: 14
+
+      - name: Upload logs and results
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: test-results-${{ strategy.job-index }}
           path: |
             test-results/
-            playwright-report/
             logs/
           retention-days: 14
 
@@ -71,13 +78,21 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - name: Download all results
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+
+      - name: Download blob reports
         uses: actions/download-artifact@v4
         with:
-          path: all-results/
+          pattern: blob-report-*
+          path: all-blob-reports/
+          merge-multiple: true
 
       - name: Merge reports
-        run: npx playwright merge-reports --reporter=html ./all-results
+        run: npx playwright merge-reports --reporter=html ./all-blob-reports
 
       - name: Publish report
         uses: actions/upload-artifact@v4

@@ -16,12 +16,19 @@ export default defineConfig({
   fullyParallel: true,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 4 : undefined,
-  reporter: [
-    ['list'],
-    ['html', { open: 'never' }],
-    ['junit', { outputFile: 'test-results/junit-results.xml' }],
-    ['./src/reporters/CustomReporter.js'],
-  ],
+  reporter: process.env.CI
+    ? [
+        ['blob'],
+        ['list'],
+        ['junit', { outputFile: 'test-results/junit-results.xml' }],
+        ['./src/reporters/CustomReporter.js'],
+      ]
+    : [
+        ['list'],
+        ['html', { open: 'never' }],
+        ['junit', { outputFile: 'test-results/junit-results.xml' }],
+        ['./src/reporters/CustomReporter.js'],
+      ],
 
   use: {
     baseURL: env.baseURL,

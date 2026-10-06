@@ -72,12 +72,14 @@ async uploadFile(locator, filePath, description = '') {
     await locator.setInputFiles(filePath)
 }
 
-async clickAndWaitForNavigation(locator, description = '') {
+async clickAndWaitForNavigation(locator, description = '', urlPattern) {
     this.logger.step(`Clicking "${description || 'element'}" and waiting for navigation`)
-    await Promise.all([
-        this.page.waitForLoadState('domcontentloaded'),
-        locator.click(),
-    ])
+    const navigationPromise = urlPattern
+        ? this.page.waitForURL(urlPattern)
+        : this.page.waitForEvent('framenavigated');
+    await locator.click();
+    await navigationPromise;
+    await this.page.waitForLoadState('domcontentloaded');
 }
 
 // ---- Element state queries ----
